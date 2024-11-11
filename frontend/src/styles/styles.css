@@ -1,0 +1,205 @@
+/* General styling for all screens */
+
+body {
+    background-image: url('./images/BG.png'); /* Path to your background image */
+    background-size: cover;  /* Cover the entire screen */
+    background-position: center center; /* Center the image */
+    background-attachment: fixed; /* Make the background fixed when scrolling */
+    background-repeat: no-repeat; /* Ensure the image doesn't repeat */
+    height: 100vh; /* Ensure it takes up full height */
+    margin: 0; /* Remove default margin */
+  }
+
+.header {
+    background-color: #1E5EFF;
+    height: 250px; 
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0 100px;
+    color: white;
+    font-size: 36px; 
+    font-family: 'Inter', sans-serif;
+    font-weight: 700;
+    min-width: 1000px; 
+  }
+  
+  /* Layout for the main content */
+  .container-fluid {
+    padding: 20px;
+  }
+  
+  .row {
+    display: flex;
+    justify-content: space-between;
+    gap: 20px;
+  }
+  
+  /* Left Column for Data Reporting and Interpretation */
+  .col-lg-8 {
+    flex: 2; /* Take up more space */
+  }
+  
+  .card {
+    background-color: white;
+    border-radius: 10px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    padding: 20px;
+    margin-bottom: 20px;
+  }
+  
+  .card-header {
+    background-color: #1E5EFF;
+    color: white;
+    padding: 10px;
+    font-size: 20px;
+    font-weight: 700;
+  }
+  
+  .card-body {
+    padding: 20px;
+  }
+  
+  .graph-container {
+    height: 300px;
+    background-color: #f8f9fa; /* Placeholder for the graph */
+  }
+  
+/* Right Column for CSV Upload and Tables */
+.col-lg-4 {
+    flex: 1; /* Take up less space */
+    height: 100%; /* Ensure the right column takes up the full height */
+    overflow-y: auto; /* Enable vertical scrolling */
+    max-height: 95vh; /* Limit the height of the right column (e.g., 90% of the viewport height) */
+    padding: 50px;
+    border-radius: 15px; /* Adjust the radius as needed */
+    background-color: #1E5EFF; /* Light background for the right side */
+    color: #f1f1f1;
+  }
+  
+  .csv-upload-section {
+    margin-top: 20px;
+  }
+  
+  .card-title {
+    color: #1E2753;
+    font-size: 28px;
+    font-family: 'Inter', sans-serif;
+    font-weight: 700;
+    margin-bottom: 15px;
+  }
+  
+  .button {
+    background-color: #1E2753;
+    color: white;
+    border-radius: 4px;
+    padding: 12px 24px;
+    font-size: 16px;
+    text-align: center;
+    cursor: pointer;
+    width: 100%;
+    margin: 10px 0;
+    transition: background-color 0.3s ease;
+  }
+  
+  .button:hover {
+    background-color: #1A1D3D;
+  }
+  
+  .file-input-wrapper {
+    position: relative;
+    width: 100%;
+    max-width: 350px;
+    margin: 10px 0;
+  }
+  
+  .file-input {
+    display: none;
+  }
+  
+  .file-label {
+    background-color: #1E2753;
+    color: white;
+    padding: 12px;
+    border-radius: 4px;
+    cursor: pointer;
+    width: 100%;
+    display: block;
+    text-align: center;
+  }
+  
+  .file-label:hover {
+    background-color: #1A1D3D;
+  }
+  
+  .file-status {
+    color: #1E2753;
+    font-size: 16px;
+    font-family: 'Inter', sans-serif;
+    font-weight: 700;
+    text-align: center;
+    margin-top: 10px;
+  }
+  
+  /* Table Styling */
+  .table-container {
+    overflow-x: auto;
+    margin-top: 30px;
+  }
+  
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    text-align: left;
+  }
+  
+  th, td {
+    padding: 12px;
+    border: 1px solid #ddd;
+  }
+  
+  th {
+    background-color: #1E2753;
+    color: white;
+  }
+  
+  tr:hover {
+    background-color: #f1f1f1;
+  }
+  
+  /* Responsive layout for smaller screens */
+  @media screen and (max-width: 768px) {
+    .header {
+      font-size: 24px;
+    }
+  
+    .row {
+      flex-direction: column;
+    }
+  
+    .col-lg-8, .col-lg-4 {
+      width: 100%;
+    }
+  
+    .csv-upload-section {
+      margin-top: 10px;
+    }
+  
+    .card {
+      margin: 10px 0;
+    }
+  
+    .button {
+      font-size: 14px;
+      padding: 10px 20px;
+    }
+  
+    table, th, td {
+      font-size: 12px;
+    }
+  
+    .graph-container {
+      height: 250px;
+    }
+  }
+  
