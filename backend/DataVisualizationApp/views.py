@@ -4,6 +4,7 @@ import re
 from django.db import connection
 from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
+import json
 
 @csrf_exempt
 # View for uploading CSV and creating dynamic tables
@@ -47,6 +48,39 @@ def list_uploaded_tables(request):
     # Return the list of table names as JSON
     table_names = [table[0] for table in tables]
     return JsonResponse({"tables": table_names})
+
+# Fetch columns for a selected table to be used for X and Y axes
+def fetch_columns(request, table_name):
+    with connection.cursor() as cursor:
+        query = """
+            SELECT column_name 
+            FROM information_schema.columns 
+            WHERE table_name = %s AND table_schema = 'public';
+        """
+        cursor.execute(query, [table_name])
+        columns = [col[0] for col in cursor.fetchall()]  # Retrieves only column names
+    return JsonResponse({"columns": columns})
+
+# Generate chart based on user selection
+@csrf_exempt
+def generate_chart(request):
+    if request.method == 'POST':
+        data = json.loads(request.body)
+        table_name = data.get('table_name')
+        x_axis = data.get('x_axis')
+        y_axis = data.get('y_axis')
+        chart_type = data.get('chart_type')
+
+        # Fetch data from the database for the specified columns
+        with connection.cursor() as cursor:
+            cursor.execute(f"SELECT {x_axis}, {y_axis} FROM {table_name};")
+            rows = cursor.fetchall()
+
+        # Generate chart using Matplotlib or Plotly here and save the chart to a static path, e.g., '/static/charts/chart.png'
+
+        return JsonResponse({"message": "Chart generated successfully", "chart_url": "/static/charts/chart.png"})
+
+    return JsonResponse({"error": "Invalid request"}, status=400)
 
 # View for fetching data from a specific table
 def view_table(request, table_name):
