@@ -20,7 +20,7 @@ def upload_csv(request):
 
         # Generate SQL to create the table dynamically based on CSV columns
         with connection.cursor() as cursor:
-            # Drop the table if it already exists (for simplicity, modify as needed)
+            # Drop the table if it already exists
             cursor.execute(f"DROP TABLE IF EXISTS {table_name};")
 
             # Define table schema with column names and set a max length for varchar fields
@@ -41,7 +41,7 @@ def upload_csv(request):
 # View for fetching a list of uploaded tables
 def list_uploaded_tables(request):
     with connection.cursor() as cursor:
-        # Query to get all table names (you can refine this if you want only specific tables)
+        # Query to get all table names 
         cursor.execute("SELECT table_name FROM information_schema.tables WHERE table_schema = 'public';")
         tables = cursor.fetchall()
     

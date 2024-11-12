@@ -90,7 +90,7 @@ WSGI_APPLICATION = 'backend.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
-        'NAME': 'CSVFiles',
+        'NAME': 'Uploads_CSV',
         'USER': 'postgres',
         'PASSWORD': 'Gizmo@2022',
         'HOST': 'localhost',

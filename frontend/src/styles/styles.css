@@ -1,13 +1,13 @@
 /* General styling for all screens */
 
 body {
-    background-image: url('./images/BG.png'); /* Path to your background image */
-    background-size: cover;  /* Cover the entire screen */
-    background-position: center center; /* Center the image */
-    background-attachment: fixed; /* Make the background fixed when scrolling */
-    background-repeat: no-repeat; /* Ensure the image doesn't repeat */
-    height: 100vh; /* Ensure it takes up full height */
-    margin: 0; /* Remove default margin */
+    background-image: url('./images/BG.png'); 
+    background-size: cover;  
+    background-position: center center; 
+    background-attachment: fixed; 
+    background-repeat: no-repeat; 
+    height: 100vh; 
+    margin: 0; 
   }
 
 .header {

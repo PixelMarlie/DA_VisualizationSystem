@@ -78,7 +78,7 @@ const CsvUpload = () => {
   };
   
   
-//Non-Functional
+//Non-Functional (Chart Generation)
   const handleGenerateChart = () => {
     axios.post('http://localhost:8000/api/generate_chart/', {
       table_name: selectedTable,
@@ -94,8 +94,8 @@ const CsvUpload = () => {
     });
   };
 
+//UI
   return (
-    
     <div className="csv-upload-section">
       {/* Upload CSV Section */}
     <h2 className="text-center">Upload CSV File</h2>
@@ -106,6 +106,17 @@ const CsvUpload = () => {
       </div>
     </div>
 
+      {message && <p className="text-center mt-3">{message}</p>}
+
+      <h3 className="text-center mt-5">List of CSV Files Uploaded</h3>
+      {/* List of CSV Files */}
+      <ul className="list-group">
+        {tables.map((table, index) => (
+          <li className="list-group-item list-group-item-action" key={index} onClick={() => handleTableSelect(table)}>
+            {table}
+          </li>
+        ))}
+      </ul>
 
       {/* Generate Data Report Section */}
       <h3 className="text-center mt-5">Generate Data Report</h3>
