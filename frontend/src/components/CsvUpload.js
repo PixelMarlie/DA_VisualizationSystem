@@ -11,6 +11,8 @@ const CsvUpload = () => {
   const [columns, setColumns] = useState([]);
   const [xAxis, setXAxis] = useState('');
   const [yAxis, setYAxis] = useState('');
+  const [xData, setXData] = useState([]); // Store x-axis data for the chart
+  const [yData, setYData] = useState([]); // Store y-axis data for the chart
   const [chartType, setChartType] = useState('');
   const [chartUrl, setChartUrl] = useState('');
 
@@ -78,21 +80,36 @@ const CsvUpload = () => {
   };
   
   
-//Non-Functional (Chart Generation)
-  const handleGenerateChart = () => {
-    axios.post('http://localhost:8000/api/generate_chart/', {
+//(Chart Generation)
+const handleGenerateChart = () => {
+  axios.post('http://localhost:8000/api/generate_chart/', {
+    table_name: selectedTable,
+    x_axis: xAxis,
+    y_axis: yAxis,
+    chart_type: chartType
+  }).then(response => {
+    console.log('Chart URL:', response.data.chart_url); // Log the URL to verify
+    setChartUrl(`http://localhost:8000${response.data.chart_url}`);
+    setMessage("Chart generated successfully!");
+
+    // Fetch data for selected x and y columns to pass into the charting library if needed
+    axios.post('http://localhost:8000/api/fetch_axis_data/', {
       table_name: selectedTable,
       x_axis: xAxis,
       y_axis: yAxis,
-      chart_type: chartType
     }).then(response => {
-      setChartUrl(response.data.chart_url); // Update to display the generated chart
-      setMessage("Chart generated successfully!");
+      setXData(response.data.x_data);
+      setYData(response.data.y_data);
     }).catch(error => {
-      console.error('Error generating chart:', error);
-      setMessage("Error generating chart. Please try again.");
+      console.error('Error fetching axis data:', error);
+      setMessage("Error fetching axis data for chart.");
     });
-  };
+
+  }).catch(error => {
+    console.error('Error generating chart:', error);
+    setMessage("Error generating chart. Please try again.");
+  });
+};
 
 //UI
   return (
@@ -145,21 +162,16 @@ const CsvUpload = () => {
             <select className="form-control mb-3" onChange={(e) => setChartType(e.target.value)} value={chartType}>
               <option value="">Select Chart Type</option>
               <option value="bar">Bar Chart</option>
-              <option value="pie">Pie Chart</option>
               <option value="line">Line Chart</option>
               <option value="scatter">Scatter Plot</option>
               <option value="row">Row Chart</option>
+              <option value="histogram">Histogram</option>
             </select>
 
             <button className="btn btn-success btn-block" onClick={handleGenerateChart}>Generate Chart</button>
           </>
         )}
-            {chartUrl && (
-                <div className="text-center mt-4">
-                  <h4>Generated Chart</h4>
-                  <img src={chartUrl} alt="Generated Chart" className="img-fluid" />
-                </div>
-              )}
+
             </div>
 
     {selectedTable && tableData && (

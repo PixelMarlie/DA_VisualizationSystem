@@ -1,9 +1,15 @@
 # DataVisualizationApp/views.py
 import pandas as pd
+import matplotlib.pyplot as plt
+import seaborn as sns
+import io
 import re
+import os
 from django.db import connection
-from django.http import JsonResponse
+from django.http import JsonResponse, HttpResponse
 from django.views.decorators.csrf import csrf_exempt
+from django.core.files.base import ContentFile
+from django.conf import settings
 import json
 
 @csrf_exempt
@@ -61,25 +67,83 @@ def fetch_columns(request, table_name):
         columns = [col[0] for col in cursor.fetchall()]  # Retrieves only column names
     return JsonResponse({"columns": columns})
 
+@csrf_exempt
+def fetch_axis_data(request):
+    if request.method == "POST":
+        data = json.loads(request.body)
+        table_name = data.get("table_name")
+        x_axis = data.get("x_axis")
+        y_axis = data.get("y_axis")
+
+        # Fetch data for the specified x and y columns
+        with connection.cursor() as cursor:
+            cursor.execute(f"SELECT {x_axis}, {y_axis} FROM {table_name};")
+            rows = cursor.fetchall()
+        
+        # Extract x_data and y_data separately
+        x_data, y_data = zip(*rows)
+        
+        return JsonResponse({"x_data": list(x_data), "y_data": list(y_data)})
+    
+    return JsonResponse({"error": "Invalid request"}, status=400)
+
+
 # Generate chart based on user selection
 @csrf_exempt
 def generate_chart(request):
-    if request.method == 'POST':
+    if request.method == "POST":
         data = json.loads(request.body)
-        table_name = data.get('table_name')
-        x_axis = data.get('x_axis')
-        y_axis = data.get('y_axis')
-        chart_type = data.get('chart_type')
+        table_name = data.get("table_name")
+        x_axis = data.get("x_axis")
+        y_axis = data.get("y_axis")
+        chart_type = data.get("chart_type")
 
-        # Fetch data from the database for the specified columns
         with connection.cursor() as cursor:
             cursor.execute(f"SELECT {x_axis}, {y_axis} FROM {table_name};")
             rows = cursor.fetchall()
 
-        # Generate chart using Matplotlib or Plotly here and save the chart to a static path, e.g., '/static/charts/chart.png'
+        df = pd.DataFrame(rows, columns=[x_axis, y_axis])
 
-        return JsonResponse({"message": "Chart generated successfully", "chart_url": "/static/charts/chart.png"})
+        # Ensure sorting based on x and y axes
+        if pd.api.types.is_numeric_dtype(df[x_axis]):
+            # If both x and y axes are numeric, sort them numerically
+            df = df.sort_values(by=[x_axis, y_axis])
+        else:
+            # If x-axis is categorical, sort alphabetically and y-axis accordingly
+            df = df.sort_values(by=[x_axis, y_axis], ascending=[True, True])
 
+        x_data = df[x_axis]
+        y_data = df[y_axis]
+
+        plt.figure(figsize=(20, 6))
+
+        # Generate the selected chart type
+        if chart_type == "bar":
+            sns.barplot(x=x_data, y=y_data, data=df)
+        elif chart_type == "line":
+            sns.lineplot(x=x_data, y=y_data, data=df)
+        elif chart_type == "scatter":
+            sns.scatterplot(x=x_data, y=y_data, data=df)
+        elif chart_type == "histogram":
+            sns.histplot(x=x_data, y=y_data, data=df)
+        elif chart_type == "row":
+            sns.boxplot(x=x_data, y=y_data, data=df)
+
+        # Save the chart to static/charts directory
+        charts_dir = os.path.join(settings.BASE_DIR, 'static', 'charts')
+        if not os.path.exists(charts_dir):
+            os.makedirs(charts_dir)
+
+        chart_file_path = os.path.join(charts_dir, "chart.png")
+        plt.savefig(chart_file_path, format='png')
+        plt.close()  # Close the plot to free memory
+
+        # Construct the URL for the saved chart
+        chart_path = "charts/chart.png"
+        chart_url = f"{settings.STATIC_URL}{chart_path}"  # Full static URL for the frontend
+
+        return JsonResponse({"message": "Chart generated successfully", "chart_url": chart_url})
+    
     return JsonResponse({"error": "Invalid request"}, status=400)
 
 # View for fetching data from a specific table
