@@ -7,6 +7,7 @@ Optionally run migrations (prefer not to)
 
 Backend Installations (DA_VisualizationSystem/backend)
 ->pip install djangorestframework
+->pip install psycopg or psycopg2
 ->pip install django-cors-headers
 ->pip install pandas
 ->pip install plotly
