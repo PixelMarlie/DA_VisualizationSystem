@@ -1,4 +1,6 @@
 # DataVisualizationApp/views.py
+import plotly.express as px
+import plotly.io as pio
 import pandas as pd
 import matplotlib.pyplot as plt
 import seaborn as sns
@@ -106,41 +108,39 @@ def generate_chart(request):
 
         # Ensure sorting based on x and y axes
         if pd.api.types.is_numeric_dtype(df[x_axis]):
-            # If both x and y axes are numeric, sort them numerically
             df = df.sort_values(by=[x_axis, y_axis])
         else:
-            # If x-axis is categorical, sort alphabetically and y-axis accordingly
             df = df.sort_values(by=[x_axis, y_axis], ascending=[True, True])
 
         x_data = df[x_axis]
         y_data = df[y_axis]
 
-        plt.figure(figsize=(20, 6))
-
-        # Generate the selected chart type
+        # Generate the selected chart type using Plotly
+        fig = None
         if chart_type == "bar":
-            sns.barplot(x=x_data, y=y_data, data=df)
+            fig = px.bar(df, x=x_axis, y=y_axis)
         elif chart_type == "line":
-            sns.lineplot(x=x_data, y=y_data, data=df)
+            fig = px.line(df, x=x_axis, y=y_axis)
         elif chart_type == "scatter":
-            sns.scatterplot(x=x_data, y=y_data, data=df)
+            fig = px.scatter(df, x=x_axis, y=y_axis)
         elif chart_type == "histogram":
-            sns.histplot(x=x_data, y=y_data, data=df)
-        elif chart_type == "row":
-            sns.boxplot(x=x_data, y=y_data, data=df)
+            fig = px.histogram(df, x=x_axis, y=y_axis)
+        elif chart_type == "box":
+            fig = px.box(df, x=x_axis, y=y_axis)
 
         # Save the chart to static/charts directory
         charts_dir = os.path.join(settings.BASE_DIR, 'static', 'charts')
         if not os.path.exists(charts_dir):
             os.makedirs(charts_dir)
 
-        chart_file_path = os.path.join(charts_dir, "chart.png")
-        plt.savefig(chart_file_path, format='png')
-        plt.close()  # Close the plot to free memory
+        chart_file_path = os.path.join(charts_dir, "chart.html")
+        pio.write_html(fig, chart_file_path)
 
         # Construct the URL for the saved chart
-        chart_path = "charts/chart.png"
+        chart_path = "charts/chart.html"
         chart_url = f"{settings.STATIC_URL}{chart_path}"  # Full static URL for the frontend
+        
+        print(f'DIR: {chart_url}')
 
         return JsonResponse({"message": "Chart generated successfully", "chart_url": chart_url})
     

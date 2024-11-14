@@ -144,7 +144,7 @@ STATICFILES_DIRS = [
     os.path.join(BASE_DIR, 'static') 
 ]
 
-# For development, Django needs to serve static files, so add this if not present:
+# For development
 if DEBUG:
     STATICFILES_DIRS.append(os.path.join(BASE_DIR, 'frontend', 'public', 'static'))
 
