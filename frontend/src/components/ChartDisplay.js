@@ -12,7 +12,7 @@ const ChartDisplay = ({ chartUrl }) => {
                     style={{ border: 'none' }}
                 />
             ) : (
-                <p>No chart available</p>
+                <p>No chart generated yet.</p>
             )}
         </div>
     );

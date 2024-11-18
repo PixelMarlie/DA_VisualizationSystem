@@ -34,11 +34,15 @@ body {
     display: flex;
     justify-content: space-between;
     gap: 20px;
+    height: 100vh; /* Ensure the row takes up the full viewport height */
   }
   
   /* Left Column for Data Reporting and Interpretation */
   .col-lg-8 {
     flex: 2; /* Take up more space */
+    overflow-y: auto; /* Enable vertical scrolling */
+    height: 100vh; /* Ensure the left column takes up full height */
+    padding: 20px; /* Adjust padding as necessary */
   }
   
   .card {
@@ -79,13 +83,22 @@ body {
   }
   
   .graph-container {
-    height: 300px;
+    height: auto;
     background-color: #f8f9fa; /* Placeholder for the graph */
+    place-items: center;
+  }
+
+  .graph-container button {
+    margin-top: 1px; /* Adjust margin as needed */
+    margin-left: 420px;
+    margin-bottom: 10px;
   }
   
 /* Right Column for CSV Upload and Tables */
 .col-lg-4 {
     flex: 1; /* Take up less space */
+    position: sticky; /* Make the column stick to the top */
+    top: 0; /* Align it at the top of the viewport */
     height: 100%; /* Ensure the right column takes up the full height */
     overflow-y: auto; /* Enable vertical scrolling */
     max-height: 95vh; /* Limit the height of the right column (e.g., 90% of the viewport height) */
@@ -94,6 +107,17 @@ body {
     background-color: #1E5EFF; /* Light background for the right side */
     color: #f1f1f1;
   }
+
+  /* Hide scrollbars but allow scrolling */
+.col-lg-8, .col-lg-4 {
+  overflow-y: scroll; /* Ensure vertical scrolling is possible */
+}
+
+/* Hide scrollbar for both columns */
+.col-lg-8::-webkit-scrollbar, .col-lg-4::-webkit-scrollbar {
+  display: none; /* Hide the scrollbar */
+}
+
   
   .csv-upload-section {
     margin-top: 20px;
@@ -219,5 +243,6 @@ body {
     .graph-container {
       height: 250px;
     }
+    
   }
   

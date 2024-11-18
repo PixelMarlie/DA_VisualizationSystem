@@ -2,8 +2,9 @@
 import plotly.express as px
 import plotly.io as pio
 import pandas as pd
-import matplotlib.pyplot as plt
-import seaborn as sns
+import time
+#import matplotlib.pyplot as plt
+#import seaborn as sns
 import io
 import re
 import os
@@ -133,12 +134,14 @@ def generate_chart(request):
         if not os.path.exists(charts_dir):
             os.makedirs(charts_dir)
 
-        chart_file_path = os.path.join(charts_dir, "chart.html")
+        # Save the chart to static/charts directory with a unique filename
+        unique_filename = f"chart_{int(time.time())}.html"
+        chart_file_path = os.path.join(charts_dir, unique_filename)
         pio.write_html(fig, chart_file_path)
 
         # Construct the URL for the saved chart
-        chart_path = "charts/chart.html"
-        chart_url = f"{settings.STATIC_URL}{chart_path}"  # Full static URL for the frontend
+        chart_path = f"charts/{unique_filename}"
+        chart_url = f"{settings.STATIC_URL}{chart_path}" #path that is passed to react
         
         print(f'DIR: {chart_url}')
 

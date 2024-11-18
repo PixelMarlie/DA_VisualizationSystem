@@ -4,8 +4,8 @@ import 'bootstrap/dist/css/bootstrap.min.css';
 import React, { useEffect, useState } from "react";
 import ChartDisplay from './components/ChartDisplay.js';
 import LOGO from './styles/images/LOGO.png';
+import PLM from './styles/images/PLM.png';
 import './styles/styles.css';
-
 
 function App() {
   const [csvFile, setCsvFile] = useState(null);
@@ -97,6 +97,7 @@ const handleGenerateChart = () => {
     console.log('Chart URL:', response.data.chart_url); // Log the URL to verify
     setChartUrl(`http://localhost:8000${response.data.chart_url}`);
     setMessage("Chart generated successfully!");
+    //after chart generated, a button will appear that allows them to print the generated chart (pdf)
 
     // Fetch data for selected x and y columns to pass into the charting library if needed
     axios.post('http://localhost:8000/api/fetch_axis_data/', {
@@ -117,6 +118,17 @@ const handleGenerateChart = () => {
   });
 };
 
+//Print Handling
+const handlePrintChart = () => {
+  const printWindow = window.open(chartUrl, '_blank');
+  if (printWindow) {
+    printWindow.focus();
+    printWindow.print(); // Trigger print dialog
+  } else {
+    alert('Unable to open chart for printing.');
+  }
+};
+
   return (
     <div className="container-fluid">
       {/* Main Content */}
@@ -126,6 +138,7 @@ const handleGenerateChart = () => {
           
         <div className="card mb-4">
           <h3 className="card-header2">
+            <img src= {PLM} alt="PLM.png" />
             DataAlchemy: Data Visualization Tool
             <img src= {LOGO} alt="LOGO.png" />
             </h3>
@@ -138,6 +151,9 @@ const handleGenerateChart = () => {
               <div className="graph-container">
                 {/* Use the ChartDisplay component */}
                 <ChartDisplay chartUrl={chartUrl} />
+                {chartUrl && (
+                <button className="btn btn-primary btn-block" onClick={handlePrintChart}>View Chart Full Screen</button>
+               )}
               </div>
             </div>
           </div>
@@ -176,7 +192,7 @@ const handleGenerateChart = () => {
         <h3 className="text-center mt-5">Generate Data Report</h3>
           <label>Select CSV Table</label>
           <select className="form-control mb-3" onChange={(e) => handleTableSelect(e.target.value)} value={selectedTable || ''}>
-            <option value="">Select a Table</option>
+            <option value="">--Select a Table--</option>
             {tables.map(table => <option key={table} value={table}>{table}</option>)}
           </select>
 
@@ -184,23 +200,23 @@ const handleGenerateChart = () => {
             <>
               <label>X-Axis</label>
               <select className="form-control mb-3" onChange={(e) => setXAxis(e.target.value)} value={xAxis}>
-                <option value="">Select X-Axis</option>
+                <option value="">--Select X-Axis--</option>
                 {columns.map(col => <option key={col} value={col}>{col}</option>)}
               </select>
 
               <label>Y-Axis</label>
               <select className="form-control mb-3" onChange={(e) => setYAxis(e.target.value)} value={yAxis}>
-                <option value="">Select Y-Axis</option>
+                <option value="">--Select Y-Axis--</option>
                 {columns.map(col => <option key={col} value={col}>{col}</option>)}
               </select>
 
               <label>Chart Type</label>
               <select className="form-control mb-3" onChange={(e) => setChartType(e.target.value)} value={chartType}>
-                <option value="">Select Chart Type</option>
+                <option value="">--Select Chart Type--</option>
                 <option value="bar">Bar Chart</option>
                 <option value="line">Line Chart</option>
                 <option value="scatter">Scatter Plot</option>
-                <option value="row">Row Chart</option>
+                <option value="box">Box Chart</option>
                 <option value="histogram">Histogram</option>
               </select>
 
