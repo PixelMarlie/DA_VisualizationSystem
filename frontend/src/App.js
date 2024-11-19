@@ -8,10 +8,12 @@ import PLM from './styles/images/PLM.png';
 import './styles/styles.css';
 
 function App() {
+  //CSV File and Table Handling states
   const [csvFile, setCsvFile] = useState(null);
   const [tables, setTables] = useState([]);
   const [selectedTable, setSelectedTable] = useState(null);
   const [tableData, setTableData] = useState(null);
+
   const [message, setMessage] = useState(""); // State to store success/error messages
   const [columns, setColumns] = useState([]);
   const [xAxis, setXAxis] = useState('');
@@ -20,7 +22,14 @@ function App() {
   const [yData, setYData] = useState([]); // Store y-axis data for the chart
   const [chartType, setChartType] = useState('');
   const [chartUrl, setChartUrl] = useState('');
+  const [chartUrl2, setChartUrl2] = useState('');
 
+
+  // states for interpretation
+  const [interpretation, setInterpretation] = useState('');
+  const [showEmailCard, setShowEmailCard] = useState(false);
+  const [email, setEmail] = useState('');
+  const [isChartGenerated, setIsChartGenerated] = useState(false);
 
   useEffect(() => {
     // Fetch the list of uploaded tables from the backend
@@ -96,6 +105,8 @@ const handleGenerateChart = () => {
   }).then(response => {
     console.log('Chart URL:', response.data.chart_url); // Log the URL to verify
     setChartUrl(`http://localhost:8000${response.data.chart_url}`);
+    setChartUrl2(`http://localhost:8000${response.data.chart_url2}`); // Store chartUrl2
+    setIsChartGenerated(true);
     setMessage("Chart generated successfully!");
     //after chart generated, a button will appear that allows them to print the generated chart (pdf)
 
@@ -118,7 +129,7 @@ const handleGenerateChart = () => {
   });
 };
 
-//Print Handling
+//View Chart Handling
 const handlePrintChart = () => {
   const printWindow = window.open(chartUrl, '_blank');
   if (printWindow) {
@@ -127,6 +138,40 @@ const handlePrintChart = () => {
   } else {
     alert('Unable to open chart for printing.');
   }
+};
+
+//Interpretation Handling
+const handleSaveInterpretation = () => {
+  if (!interpretation) {
+    setMessage("Please provide an interpretation before saving.");
+    return;
+  }
+  setShowEmailCard(true);
+  setMessage("Interpretation saved. Enter your email to send remarks.");
+};
+
+//Send Interpretation and Chart via Email Handling
+const handleSendEmail = () => {
+  if (!email) {
+    setMessage("Please provide a valid email address.");
+    return;
+  }
+
+  axios.post('http://localhost:8000/api/send_email/', {
+    email: email,
+    interpretation: interpretation,
+    chart_url2: chartUrl2 // Send chartUrl2 as well
+  },)
+  .then(response => {
+    setMessage("Email sent successfully!");
+    setShowEmailCard(false);
+    setInterpretation('');
+    setEmail('');
+  })
+  .catch(error => {
+    console.error('Error sending email:', error);
+    setMessage("Failed to send email. Please try again.");
+  });
 };
 
   return (
@@ -162,10 +207,41 @@ const handlePrintChart = () => {
           <div className="card mb-4">
             <h3 className="card-header">Interpretation</h3>
             <div className="card-body">
-              {/* Interpretation details */}
-              <p>Interpretation of the data will go here.</p>
+              {isChartGenerated && (
+                <div className="card-body">
+                  <textarea
+                  className="form-control mb-3"
+                  rows="4"
+                  placeholder="Write your interpretation here..."
+                  value={interpretation}
+                  onChange={(e) => setInterpretation(e.target.value)}
+                />
+                  <button className="btn btn-success" onClick={handleSaveInterpretation}>
+                    Save Interpretation
+                  </button>
+                </div>
+              )}
             </div>
           </div>
+
+          {/* Email Remarks card */}
+            {showEmailCard && (
+              <div className="card mb-4">
+                <h3 className="card-header">Email Remarks</h3>
+                <div className="card-body">
+                  <input
+                    type="email"
+                    className="form-control mb-3"
+                    placeholder="Enter your email address"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                  />
+                  <button className="btn btn-primary" onClick={handleSendEmail}>
+                    Send Email
+                  </button>
+                </div>
+              </div>
+            )}
         </div>
 
         {/* Right Column - For CSV File Upload and List of Tables */}

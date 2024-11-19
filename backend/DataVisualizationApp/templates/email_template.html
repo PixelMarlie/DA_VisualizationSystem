@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <style>
+            body {
+                font-family: 'Arial', sans-serif;
+                color: #000000;
+            }
+        </style>
+    </head>
+    <body>
+        <div>
+            <!-- Main message content -->
+            <pre>{{ message }}</pre>
+
+            <!-- Email signature -->
+            <div>
+                {{ signature|safe }}
+            </div>
+        </div>
+    </body>
+</html>

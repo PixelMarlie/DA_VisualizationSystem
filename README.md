@@ -13,8 +13,13 @@ Backend Installations (DA_VisualizationSystem/backend)
 ->pip install plotly
 ->pip install matplotlib
 ->pip install seaborn
+->pip install plotly kaleido
+->pip install django-crispy-forms
 
 Frontend Installations (DA_VisualizationSystem/frontend)
 ->npm install axios
 ->npm install bootstrap
+->npm install js-cookie
+->npm install -g orca
+
 

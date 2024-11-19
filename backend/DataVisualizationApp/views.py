@@ -14,6 +14,8 @@ from django.views.decorators.csrf import csrf_exempt
 from django.core.files.base import ContentFile
 from django.conf import settings
 import json
+from django.core.mail import EmailMessage
+from django.template.loader import render_to_string
 
 @csrf_exempt
 # View for uploading CSV and creating dynamic tables
@@ -136,16 +138,21 @@ def generate_chart(request):
 
         # Save the chart to static/charts directory with a unique filename
         unique_filename = f"chart_{int(time.time())}.html"
+        unique_filename2 = f"chart_{int(time.time())}.png"
         chart_file_path = os.path.join(charts_dir, unique_filename)
+        chart_file_path2 = os.path.join(charts_dir, unique_filename2)
         pio.write_html(fig, chart_file_path)
+        pio.write_image(fig, chart_file_path2) #save as image
 
         # Construct the URL for the saved chart
         chart_path = f"charts/{unique_filename}"
+        chart_path2 = f"charts/{unique_filename2}"
         chart_url = f"{settings.STATIC_URL}{chart_path}" #path that is passed to react
+        chart_url2 = f"{settings.STATIC_URL}{chart_path2}" #path for png to send in email
         
         print(f'DIR: {chart_url}')
 
-        return JsonResponse({"message": "Chart generated successfully", "chart_url": chart_url})
+        return JsonResponse({"message": "Chart generated successfully", "chart_url": chart_url, "chart_url2": chart_url2})
     
     return JsonResponse({"error": "Invalid request"}, status=400)
 
@@ -166,3 +173,43 @@ def view_table(request, table_name):
         "rows": rows
     }
     return JsonResponse(table_data)
+
+# email handling
+@csrf_exempt
+def send_email(request):
+    if request.method == "POST":
+        data = json.loads(request.body)
+        email = data.get("email")
+        interpretation = data.get("interpretation")
+        chart_png_url = data.get("chart_url2")  # URL of the chart PNG file
+        
+        # Construct the absolute file path
+        chart_file_path = os.path.join(settings.BASE_DIR, chart_png_url.replace('http://localhost:8000/', ''))
+
+        # Validate inputs
+        if not email or not interpretation or not chart_png_url:
+            return JsonResponse({"error": "Invalid data. Ensure all fields are filled."}, status=400)
+
+        # Construct email content
+        subject = "Chart Interpretation and Remarks"
+        message = f"Dear User,\n\nAttached within this email is the Data Report generated. Here is your interpretation from the generated Data Report:\n\n{interpretation}\n\nBest regards,\nDataAlchemy Team"
+        
+        # The email body, using HTML to format the signature
+        body = render_to_string('email_template.html', {
+            'message': message,  # Your email content
+            'signature': render_to_string('email_signature.html')  
+        })
+        
+        # Send email with the PNG attached
+        try:
+            email_message = EmailMessage(subject, body, 'foreverpixel16@gmail.com', [email])
+            print(chart_file_path)
+            email_message.attach_file(chart_file_path)
+            email_message.content_subtype = "html"  # This tells Django to treat the email as HTML
+            email_message.send()
+            return JsonResponse({"message": "Email sent successfully."})
+        except Exception as e:
+            return JsonResponse({"error": f"Failed to send email: {str(e)}"}, status=500)
+    
+    return JsonResponse({"error": "Invalid request"}, status=400)
+
