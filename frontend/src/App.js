@@ -31,6 +31,9 @@ function App() {
   const [email, setEmail] = useState('');
   const [isChartGenerated, setIsChartGenerated] = useState(false);
 
+  // Data Cleaning Outlier Cleaning Selection
+  const [outlierAction, setOutlierAction] = useState('cap'); // Default to 'cap'
+
   useEffect(() => {
     // Fetch the list of uploaded tables from the backend
     axios.get('http://localhost:8000/api/list_tables/')
@@ -56,7 +59,7 @@ function App() {
     axios.post('http://localhost:8000/api/upload/', formData)
       .then(response => {
         console.log('CSV uploaded successfully');
-        setMessage("CSV uploaded successfuully!");
+        setMessage("CSV uploaded successfully!");
         // Refetch tables after successful upload
         axios.get('http://localhost:8000/api/list_tables/')
           .then(response => {
@@ -250,6 +253,7 @@ const handleSendEmail = () => {
           {/* Upload CSV Section */}
           <h2 className="text-center">Upload CSV File</h2>
             <input type="file" className="form-control mb-3" onChange={handleFileChange} />
+
             <button className="btn btn-primary btn-block" onClick={handleUpload}>Upload CSV</button>
 
           {message && <p className="text-center mt-3">{message}</p>}

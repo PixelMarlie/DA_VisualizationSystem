@@ -1,5 +1,7 @@
-ACTIVATE ENV 
+DELETE ENV FILE
+Then Create your env
 python -m venv env
+ACTIVATE
 source sampleenv/bin/activate  # On Windows, use env\Scripts\activate
 
 Setup your DB in Settings.py (where CSV Files will be stored)
@@ -15,6 +17,7 @@ Backend Installations (DA_VisualizationSystem/backend)
 ->pip install seaborn
 ->pip install plotly kaleido
 ->pip install django-crispy-forms
+->pip install scikit-learn
 
 Frontend Installations (DA_VisualizationSystem/frontend)
 ->npm install axios

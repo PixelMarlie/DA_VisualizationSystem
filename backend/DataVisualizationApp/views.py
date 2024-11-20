@@ -1,8 +1,10 @@
 # DataVisualizationApp/views.py
-import plotly.express as px
+import plotly.express as px 
 import plotly.io as pio
 import pandas as pd
 import time
+import numpy as np
+from sklearn.impute import SimpleImputer
 #import matplotlib.pyplot as plt
 #import seaborn as sns
 import io
@@ -17,10 +19,32 @@ import json
 from django.core.mail import EmailMessage
 from django.template.loader import render_to_string
 
+#Clean Column Names for SQL Acceptance
+def clean_column_name(name):
+    name = re.sub(r'[^\w\s]', '', name)  # Remove punctuation
+    name = re.sub(r'\s+', '_', name).strip()  # Replace spaces with underscores
+    stop_words = {'a', 'the', 'and', 'or', 'to', 'for', 'on', 'in'}  # Define stop words
+    name = '_'.join([word for word in name.split() if word.lower() not in stop_words])
+    if name.lower() in {'order', 'select', 'create', 'table', 'drop', 'update', 'delete'}:  # Avoid SQL keywords
+        name += '_col'  # Add a suffix to avoid conflicts
+    return name
+
+# 3. Text Data Cleaning
+def clean_text(text):
+    if isinstance(text, str):  # Only clean if the value is a string
+        text = re.sub(r'[^\w\s]', '', text)  # Remove special characters
+        text = re.sub(r'\s+', ' ', text).strip()  # Remove extra whitespace
+        stop_words = {'a', 'the', 'and', 'or', 'to', 'for', 'on', 'in'}
+        text = ' '.join([word for word in text.split() if word.lower() not in stop_words])
+    else:
+        text = str(text) if text else "Unknown"  # Handle non-string values
+    return text
+
 @csrf_exempt
 # View for uploading CSV and creating dynamic tables
 def upload_csv(request):
     if request.method == "POST" and request.FILES.get("csv_file"):
+        outlier_action = request.POST.get("outlier_action", "cap")  # Default to 'cap'
         csv_file = request.FILES["csv_file"]
 
         # Extract table name from the file name (remove file extension and any non-alphanumeric characters)
@@ -28,14 +52,50 @@ def upload_csv(request):
 
         # Read the CSV file using pandas
         df = pd.read_csv(csv_file)
+        
+        # Start Auto Data Cleaning
+        # 1. Handle Missing Values
+        for column in df.columns:
+            if df[column].dtype == 'object':  # Text columns
+                most_frequent_value = df[column].mode()[0] if not df[column].mode().empty else "Unknown"
+                df[column].fillna(most_frequent_value, inplace=True)
+            elif np.issubdtype(df[column].dtype, np.number):  # Numeric columns
+                median_value = df[column].median() if not df[column].dropna().empty else 0
+                df[column].fillna(median_value, inplace=True)
+            elif np.issubdtype(df[column].dtype, np.datetime64):  # Datetime columns
+                df[column].fillna(pd.Timestamp.now(), inplace=True)
+            else:
+                df[column].fillna("Unknown", inplace=True)
+        
+        # 2. Data Type Conversion
+        for column in df.columns:
+            if pd.api.types.is_numeric_dtype(df[column]):
+                # Check if all values are whole numbers (no decimals or just trailing zeroes)
+                if df[column].apply(lambda x: isinstance(x, (int, float)) and x.is_integer()).all():
+                    # If all values are whole numbers, convert to integer type
+                    df[column] = df[column].apply(lambda x: int(x) if isinstance(x, float) else x)
+                else:
+                    # If the column contains decimal values, round them to 2 decimal places
+                    df[column] = df[column].apply(lambda x: round(x, 2) if isinstance(x, float) else x)
+            elif pd.api.types.is_datetime64_any_dtype(df[column]) or pd.to_datetime(df[column], errors="coerce").notnull().all():
+                # Convert text representations of dates to datetime and extract only the date (no time)
+                df[column] = pd.to_datetime(df[column], errors="coerce").dt.date.fillna(pd.Timestamp.now().date())
+            else:
+                # Clean text and ensure consistent formatting for non-numeric, non-datetime columns
+                df[column] = df[column].astype(str).apply(clean_text)
+
+        # Clean column names using the updated function
+        df.columns = [clean_column_name(col) for col in df.columns]
+        for column in df.select_dtypes(include=['object']).columns:
+            df[column] = df[column].apply(clean_text)
 
         # Generate SQL to create the table dynamically based on CSV columns
         with connection.cursor() as cursor:
             # Drop the table if it already exists
             cursor.execute(f"DROP TABLE IF EXISTS {table_name};")
 
-            # Define table schema with column names and set a max length for varchar fields
-            columns = ', '.join([f"{re.sub(r'\\W+', '_', col)} VARCHAR(255)" for col in df.columns])
+            # Define table schema with cleaned column names
+            columns = ', '.join([f"{col} VARCHAR(255)" for col in df.columns])  # Columns already sanitized
             create_table_query = f"CREATE TABLE {table_name} ({columns});"
             cursor.execute(create_table_query)
 
