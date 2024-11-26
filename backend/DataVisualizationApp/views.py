@@ -1,6 +1,7 @@
 # DataVisualizationApp/views.py
 import plotly.express as px 
 import plotly.io as pio
+import plotly.graph_objects as go
 import pandas as pd
 import time
 import numpy as np
@@ -152,7 +153,6 @@ def fetch_axis_data(request):
     
     return JsonResponse({"error": "Invalid request"}, status=400)
 
-
 # Generate chart based on user selection
 @csrf_exempt
 def generate_chart(request):
@@ -160,49 +160,89 @@ def generate_chart(request):
         data = json.loads(request.body)
         table_name = data.get("table_name")
         x_axis = data.get("x_axis")
-        y_axis = data.get("y_axis")
+        y_axes = data.get("y_axes", [])  # Fetch multiple Y-axes
         chart_type = data.get("chart_type")
+        open_column = data.get("open_column")
+        close_column = data.get("close_column")
+        high_column = data.get("high_column")
+        low_column = data.get("low_column")
 
-        with connection.cursor() as cursor:
-            cursor.execute(f"SELECT {x_axis}, {y_axis} FROM {table_name};")
-            rows = cursor.fetchall()
-
-        df = pd.DataFrame(rows, columns=[x_axis, y_axis])
-
-        # Ensure sorting based on x and y axes
-        if pd.api.types.is_numeric_dtype(df[x_axis]):
-            df = df.sort_values(by=[x_axis, y_axis])
+        if chart_type != "candle":
+            with connection.cursor() as cursor:
+                columns_to_fetch = ", ".join([x_axis] + y_axes)
+                cursor.execute(f"SELECT {columns_to_fetch} FROM {table_name};")
+                rows = cursor.fetchall()
         else:
-            df = df.sort_values(by=[x_axis, y_axis], ascending=[True, True])
+            with connection.cursor() as cursor:
+                # Ensure all necessary columns are included for candlestick chart
+                columns_to_fetch = [x_axis, open_column, high_column, low_column, close_column]
+                columns_to_fetch_str = ", ".join(columns_to_fetch)
+                cursor.execute(f"SELECT {columns_to_fetch_str} FROM {table_name};")
+                rows = cursor.fetchall()
 
-        x_data = df[x_axis]
-        y_data = df[y_axis]
+        # Set the correct columns based on chart type
+        if chart_type == "candle":
+            columns = [x_axis, open_column, high_column, low_column, close_column]
+        else:
+            columns = [x_axis] + y_axes
+
+        df = pd.DataFrame(rows, columns=columns)
+
+        # Ensure sorting based on x-axis
+        if pd.api.types.is_numeric_dtype(df[x_axis]):
+            df = df.sort_values(by=[x_axis])
+        else:
+            df = df.sort_values(by=[x_axis])
 
         # Generate the selected chart type using Plotly
         fig = None
+        
+        #Charts (Unique)
         if chart_type == "bar":
-            fig = px.bar(df, x=x_axis, y=y_axis)
+            fig = px.bar(df, x=x_axis, y=y_axes[0])
+        elif chart_type == "box":
+            fig = px.box(df, x=x_axis, y=y_axes[0])
+        elif chart_type == "candle":
+            print(f"DataFrame columns: {df.columns}")
+            # Generate candlestick chart using plotly.graph_objects
+            fig = go.Figure(data=[go.Candlestick(
+                x=df[x_axis],
+                open=df[open_column],
+                high=df[high_column],
+                low=df[low_column],
+                close=df[close_column]
+            )])
+        elif chart_type == "heat":
+            fig = px.density_heatmap(df, x=x_axis, y=y_axes[0])
+        #Single Area Chart
+        elif chart_type == "s_area":
+            fig = px.area(df, x=x_axis, y=y_axes[0], title="Single Area Chart")
+        #Stacked Area Chart
+        elif chart_type == "m_area":
+            fig = px.area(df, x=x_axis, y=y_axes, title="Stacked Area Chart")
+            
+        #Charts (Not Unique)
+        '''
         elif chart_type == "line":
             fig = px.line(df, x=x_axis, y=y_axis)
         elif chart_type == "scatter":
             fig = px.scatter(df, x=x_axis, y=y_axis)
         elif chart_type == "histogram":
             fig = px.histogram(df, x=x_axis, y=y_axis)
-        elif chart_type == "box":
-            fig = px.box(df, x=x_axis, y=y_axis)
+        '''
 
         # Save the chart to static/charts directory
         charts_dir = os.path.join(settings.BASE_DIR, 'static', 'charts')
         if not os.path.exists(charts_dir):
             os.makedirs(charts_dir)
-
+        
         # Save the chart to static/charts directory with a unique filename
         unique_filename = f"chart_{int(time.time())}.html"
         unique_filename2 = f"chart_{int(time.time())}.png"
         chart_file_path = os.path.join(charts_dir, unique_filename)
         chart_file_path2 = os.path.join(charts_dir, unique_filename2)
         pio.write_html(fig, chart_file_path)
-        pio.write_image(fig, chart_file_path2) #save as image
+        pio.write_image(fig, chart_file_path2, width=1920, height=1080) #save as image
 
         # Construct the URL for the saved chart
         chart_path = f"charts/{unique_filename}"
@@ -272,4 +312,5 @@ def send_email(request):
             return JsonResponse({"error": f"Failed to send email: {str(e)}"}, status=500)
     
     return JsonResponse({"error": "Invalid request"}, status=400)
+
 

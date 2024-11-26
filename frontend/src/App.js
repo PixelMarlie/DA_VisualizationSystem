@@ -24,7 +24,6 @@ function App() {
   const [chartUrl, setChartUrl] = useState('');
   const [chartUrl2, setChartUrl2] = useState('');
 
-
   // states for interpretation
   const [interpretation, setInterpretation] = useState('');
   const [showEmailCard, setShowEmailCard] = useState(false);
@@ -33,6 +32,16 @@ function App() {
 
   // Data Cleaning Outlier Cleaning Selection
   const [outlierAction, setOutlierAction] = useState('cap'); // Default to 'cap'
+
+  //area chart
+  const [additionalYAxes, setAdditionalYAxes] = useState([]); // Store selected additional Y-axes
+  const [numAdditionalYAxes, setNumAdditionalYAxes] = useState(0); // Number of additional Y-axes
+
+// Candlestick chart state
+  const [openColumn, setOpenColumn] = useState(""); 
+  const [closeColumn, setCloseColumn] = useState(""); 
+  const [highColumn, setHighColumn] = useState(""); 
+  const [lowColumn, setLowColumn] = useState(""); 
 
   useEffect(() => {
     // Fetch the list of uploaded tables from the backend
@@ -59,7 +68,7 @@ function App() {
     axios.post('http://localhost:8000/api/upload/', formData)
       .then(response => {
         console.log('CSV uploaded successfully');
-        setMessage("CSV uploaded successfully!");
+        setMessage("CSV cleaned and uploaded successfully!");
         // Refetch tables after successful upload
         axios.get('http://localhost:8000/api/list_tables/')
           .then(response => {
@@ -100,11 +109,16 @@ function App() {
   
 //(Chart Generation)
 const handleGenerateChart = () => {
+  const yAxes = [yAxis, ...additionalYAxes];
   axios.post('http://localhost:8000/api/generate_chart/', {
     table_name: selectedTable,
     x_axis: xAxis,
-    y_axis: yAxis,
-    chart_type: chartType
+    y_axes: yAxes,
+    chart_type: chartType,
+    open_column: openColumn,
+    close_column: closeColumn,
+    high_column: highColumn,
+    low_column: lowColumn,
   }).then(response => {
     console.log('Chart URL:', response.data.chart_url); // Log the URL to verify
     setChartUrl(`http://localhost:8000${response.data.chart_url}`);
@@ -123,13 +137,25 @@ const handleGenerateChart = () => {
       setYData(response.data.y_data);
     }).catch(error => {
       console.error('Error fetching axis data:', error);
-      setMessage("Error fetching axis data for chart.");
     });
 
   }).catch(error => {
     console.error('Error generating chart:', error);
     setMessage("Error generating chart. Please try again.");
   });
+};
+
+//Additional Y-Axis Handling
+const handleNumAdditionalYAxesChange = (e) => {
+  const count = parseInt(e.target.value);
+  setNumAdditionalYAxes(count);
+  setAdditionalYAxes(Array(count).fill('')); // Initialize with empty values
+};
+
+const handleAdditionalYAxisChange = (index, value) => {
+  const updatedYAxes = [...additionalYAxes];
+  updatedYAxes[index] = value;
+  setAdditionalYAxes(updatedYAxes);
 };
 
 //View Chart Handling
@@ -193,7 +219,7 @@ const handleSendEmail = () => {
         </div>
 
           <div className="card mb-4">
-            <h3 className="card-header">Data Reporting</h3>
+            <h3 className="card-header">Data Visualization</h3>
             <div className="card-body">
               {/* graph visualization */}
               <div className="graph-container">
@@ -227,10 +253,10 @@ const handleSendEmail = () => {
             </div>
           </div>
 
-          {/* Email Remarks card */}
+          {/* Email Interpratation card */}
             {showEmailCard && (
               <div className="card mb-4">
-                <h3 className="card-header">Email Remarks</h3>
+                <h3 className="card-header">Email Interpretation</h3>
                 <div className="card-body">
                   <input
                     type="email"
@@ -269,7 +295,7 @@ const handleSendEmail = () => {
           </ul>
 
         {/* Generate Data Report Section */}
-        <h3 className="text-center mt-5">Generate Data Report</h3>
+        <h3 className="text-center mt-5">Generate Data Visualization</h3>
           <label>Select CSV Table</label>
           <select className="form-control mb-3" onChange={(e) => handleTableSelect(e.target.value)} value={selectedTable || ''}>
             <option value="">--Select a Table--</option>
@@ -278,27 +304,122 @@ const handleSendEmail = () => {
 
           {columns.length > 0 && (
             <>
+
+              <label>Chart Type</label>
+              <select className="form-control mb-3" onChange={(e) => setChartType(e.target.value)} value={chartType}>
+                <option value="">--Select Chart Type--</option>
+                <option value="bar">Bar Chart</option>
+                <option value="box">Box Chart</option>
+                <option value="candle">Candlestick Chart</option>
+                <option value="heat">Heatmap</option>
+                <option value="s_area">Area Chart (Single)</option>
+                <option value="m_area">Area Chart (Stacked)</option>
+                {/*<option value="line">Line Chart</option>*/}
+                {/*<option value="scatter">Scatter Plot</option>*/}
+                {/*<option value="histogram">Histogram</option>*/}
+              </select>
+
               <label>X-Axis</label>
               <select className="form-control mb-3" onChange={(e) => setXAxis(e.target.value)} value={xAxis}>
                 <option value="">--Select X-Axis--</option>
                 {columns.map(col => <option key={col} value={col}>{col}</option>)}
               </select>
 
-              <label>Y-Axis</label>
-              <select className="form-control mb-3" onChange={(e) => setYAxis(e.target.value)} value={yAxis}>
-                <option value="">--Select Y-Axis--</option>
-                {columns.map(col => <option key={col} value={col}>{col}</option>)}
-              </select>
+              {chartType != "candle" && (
+                <div>
+                  <label>Y-Axis</label>
+                  <select className="form-control mb-3" onChange={(e) => setYAxis(e.target.value)} value={yAxis}>
+                    <option value="">--Select Y-Axis--</option>
+                    {columns.map(col => <option key={col} value={col}>{col}</option>)}
+                  </select>
+                </div>
+              )}
 
-              <label>Chart Type</label>
-              <select className="form-control mb-3" onChange={(e) => setChartType(e.target.value)} value={chartType}>
-                <option value="">--Select Chart Type--</option>
-                <option value="bar">Bar Chart</option>
-                <option value="line">Line Chart</option>
-                <option value="scatter">Scatter Plot</option>
-                <option value="box">Box Chart</option>
-                <option value="histogram">Histogram</option>
-              </select>
+              {chartType === "m_area" && (
+                <div>
+                  <label>Number of Additional Y-Axis:</label>
+                  <select className="form-control mb-3" value={numAdditionalYAxes} onChange={handleNumAdditionalYAxesChange}>
+                    <option value="0">--Select Number--</option>
+                    <option value="1">1</option>
+                    <option value="2">2</option>
+                    <option value="3">3</option>
+                  </select>
+                  
+                  {[...Array(numAdditionalYAxes)].map((_, idx) => (
+                    <div key={idx}>
+                      <label>Additional Y-Axis {idx + 1}:</label>
+                      <select
+                        className="form-control mb-3"
+                        value={additionalYAxes[idx]}
+                        onChange={(e) => handleAdditionalYAxisChange(idx, e.target.value)}
+                      >
+                        <option value="">Select Column</option>
+                        {columns.map((col) => (
+                          <option key={col} value={col}>{col}</option>
+                        ))}
+                      </select>
+                    </div>
+                  ))}
+                </div>
+              )}
+
+              {chartType === "candle" && (
+                <div>
+                  <div>
+                    <label>Open:</label>
+                    <select
+                      className="form-control mb-3"
+                      value={openColumn}
+                      onChange={(e) => setOpenColumn(e.target.value)}
+                    >
+                      <option value="">Select Column</option>
+                      {columns.map((col) => (
+                        <option key={col} value={col}>{col}</option>
+                      ))}
+                    </select>
+                  </div>
+                  <div>
+                    <label>Close:</label>
+                    <select
+                      className="form-control mb-3"
+                      value={closeColumn}
+                      onChange={(e) => setCloseColumn(e.target.value)}
+                    >
+                      <option value="">Select Column</option>
+                      {columns.map((col) => (
+                        <option key={col} value={col}>{col}</option>
+                      ))}
+                    </select>
+                  </div>
+                  <div>
+                    <label>High:</label>
+                    <select
+                      className="form-control mb-3"
+                      value={highColumn}
+                      onChange={(e) => setHighColumn(e.target.value)}
+                    >
+                      <option value="">Select Column</option>
+                      {columns.map((col) => (
+                        <option key={col} value={col}>{col}</option>
+                      ))}
+                    </select>
+                  </div>
+                  <div>
+                    <label>Low:</label>
+                    <select
+                      className="form-control mb-3"
+                      value={lowColumn}
+                      onChange={(e) => setLowColumn(e.target.value)}
+                    >
+                      <option value="">Select Column</option>
+                      {columns.map((col) => (
+                        <option key={col} value={col}>{col}</option>
+                      ))}
+                    </select>
+                  </div>
+                </div>
+              )}
+
 
               <button className="btn btn-success btn-block" onClick={handleGenerateChart}>Generate Chart</button>
             </>
@@ -309,7 +430,7 @@ const handleSendEmail = () => {
             {selectedTable && tableData && (
         <div className="mt-5">
           {/* Show Table Selected */}
-          <h4>Data from Table: {selectedTable}</h4>
+          <h4>Data from CSV: {selectedTable}</h4>
           <table className="table table-bordered table-responsive">
             <thead>
               <tr>
