@@ -281,6 +281,7 @@ def send_email(request):
         data = json.loads(request.body)
         email = data.get("email")
         interpretation = data.get("interpretation")
+        username = data.get("username")
         chart_png_url = data.get("chart_url2")  # URL of the chart PNG file
         
         # Construct the absolute file path
@@ -292,7 +293,7 @@ def send_email(request):
 
         # Construct email content
         subject = "Chart Interpretation and Remarks"
-        message = f"Dear User,\n\nAttached within this email is the Data Report generated. Here is your interpretation from the generated Data Report:\n\n{interpretation}\n\nBest regards,\nDataAlchemy Team"
+        message = f"Dear {username},\n\nAttached within this email is the Data Report generated. Here is your interpretation from the generated Data Report:\n\n{interpretation}\n\nBest regards,\nDataAlchemy Team"
         
         # The email body, using HTML to format the signature
         body = render_to_string('email_template.html', {

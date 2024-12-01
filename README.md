@@ -24,5 +24,8 @@ Frontend Installations (DA_VisualizationSystem/frontend)
 ->npm install bootstrap
 ->npm install js-cookie
 ->npm install -g orca
+->npm install react-router-dom
+->npm install @fortawesome/fontawesome-free
+
 
 

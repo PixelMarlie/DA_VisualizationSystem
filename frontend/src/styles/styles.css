@@ -86,13 +86,20 @@ body {
     height: auto;
     background-color: #f8f9fa; /* Placeholder for the graph */
     place-items: center;
+    margin-bottom: 20px;
   }
 
   .graph-container button {
-    margin-top: 1px; /* Adjust margin as needed */
-    margin-left: 420px;
-    margin-bottom: 10px;
+    position: absolute;
+    bottom: 10px; /* Space from the bottom edge */
+    left: 50%; /* Center horizontally */
+    transform: translateX(-50%); /* Adjust to align the button's center with the container's center */
   }
+
+  .message-console {
+    font-weight: bold;
+  }
+    
   
 /* Right Column for CSV Upload and Tables */
 .col-lg-4 {
@@ -241,7 +248,7 @@ body {
     }
   
     .graph-container {
-      height: 250px;
+      height: auto;
     }
     
   }
