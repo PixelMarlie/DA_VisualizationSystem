@@ -1,0 +1,68 @@
+.chart-options {
+    font-family: 'Arial', sans-serif;
+    padding: 10px;
+    display: flex;
+    flex-direction: column;
+  }
+  
+  .label {
+    font-size: 16px;
+    margin-bottom: 10px;
+    color: #ffffff;
+  }
+  
+  .radio-group {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+  }
+  
+  .radio-input {
+    display: none; /* Hide default radio buttons */
+  }
+  
+  .radio-label {
+    position: relative;
+    padding-left: 30px;
+    cursor: pointer;
+    font-size: 16px;
+    color: #ffffff;
+    transition: color 0.3s;
+  }
+  
+  /* Custom Radio Button Styling */
+  .radio-label:before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 20px;
+    height: 20px;
+    border: 2px solid #007bff;
+    border-radius: 50%;
+    background-color: white;
+    transition: all 0.3s;
+  }
+  
+  .radio-input:checked + .radio-label:before {
+    background-color: #5aa800;
+    border-color: #007bff;
+  }
+  
+  .radio-input:checked + .radio-label {
+    color: #ffffff;
+  }
+  
+  .radio-label:hover {
+    color: #5aa800;
+  }
+  
+  /* Add a smooth transition effect */
+  .radio-label:before {
+    transition: all 0.2s;
+  }
+  
+  .radio-input:checked + .radio-label:before {
+    transform: scale(1.2);
+  }
+  

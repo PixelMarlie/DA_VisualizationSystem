@@ -106,7 +106,11 @@ def upload_csv(request):
                 insert_query = f"INSERT INTO {table_name} VALUES ({values});"
                 cursor.execute(insert_query)
 
-        return JsonResponse({"message": f"Uploaded and saved to table {table_name} successfully."})
+        return JsonResponse({
+            "message": f"Uploaded and saved to table {table_name} successfully.",
+            "total_rows": len(df),
+            "sorted_columns": df.columns.tolist()
+        })
     
     return JsonResponse({"error": "Invalid request"}, status=400)
 
@@ -166,6 +170,7 @@ def generate_chart(request):
         close_column = data.get("close_column")
         high_column = data.get("high_column")
         low_column = data.get("low_column")
+        sort_columns = data.get("sort_columns", False)  # Whether to sort by highest numeric row value
 
         if chart_type != "candle":
             with connection.cursor() as cursor:
@@ -193,6 +198,16 @@ def generate_chart(request):
             df = df.sort_values(by=[x_axis])
         else:
             df = df.sort_values(by=[x_axis])
+    
+        # Optional sorting based on the lowest numeric row value
+        if sort_columns:
+            df["row_max"] = df.apply(
+                lambda row: max(
+                    [val for val in row if isinstance(val, (int, float))], default=float('-inf')
+                ),
+                axis=1
+            )
+            df = df.sort_values(by="row_max", ascending=False).drop(columns=["row_max"])
 
         # Generate the selected chart type using Plotly
         fig = None

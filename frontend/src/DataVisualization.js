@@ -4,6 +4,7 @@ import axios from 'axios';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import React, { useEffect, useState } from "react";
 import ChartDisplay from './components/ChartDisplay.js';
+import ChartOptions from './components/ChartOption.js'; // Correct the path if necessary
 import LOGO from './styles/images/LOGO.png';
 import PLM from './styles/images/PLM.png';
 import './styles/styles.css';
@@ -45,6 +46,9 @@ function App() {
   const [highColumn, setHighColumn] = useState(""); 
   const [lowColumn, setLowColumn] = useState(""); 
 
+  //optional sorting of rows
+  const [sortColumns, setSortColumns] = useState(false);
+
   useEffect(() => {
     // Fetch the list of uploaded tables from the backend
     axios.get('http://localhost:8000/api/list_tables/')
@@ -79,7 +83,7 @@ function App() {
       })
       .catch(error => {
         console.error('Error uploading CSV:', error);
-        setMessage("Error uploading CSV. Please try again.");
+        setMessage("Error Uploading: Please make sure that the file being uploaded is a CSV file.");
       });
   };
 
@@ -120,6 +124,7 @@ const handleGenerateChart = () => {
     x_axis: xAxis,
     y_axes: yAxes,
     chart_type: chartType,
+    sort_columns: sortColumns, // Include the sort option
     open_column: openColumn,
     close_column: closeColumn,
     high_column: highColumn,
@@ -146,7 +151,7 @@ const handleGenerateChart = () => {
 
   }).catch(error => {
     console.error('Error generating chart:', error);
-    setMessage("Error generating chart. Please try again.");
+    setMessage("Error Generating Chart: Please make sure that all variable have values, and unique.");
   });
 };
 
@@ -177,7 +182,7 @@ const handlePrintChart = () => {
 //Interpretation Handling
 const handleSaveInterpretation = () => {
   if (!interpretation) {
-    setMessage("Please provide an interpretation before saving.");
+    setMessage("Saving Error: Please provide an interpretation before saving.");
     return;
   }
   setShowEmailCard(true);
@@ -187,12 +192,12 @@ const handleSaveInterpretation = () => {
 //Send Interpretation and Chart via Email Handling
 const handleSendEmail = () => {
   if (!email) {
-    setMessage("Please provide a valid email address.");
+    setMessage("Input Error: Please provide a valid email address.");
     return;
   }
 
   if (!username){
-    setMessage("Please provide a name to be addressed with")
+    setMessage("Input Error: Please provide a name to be addressed with.")
     return;
   }
 
@@ -213,8 +218,13 @@ const handleSendEmail = () => {
   })
   .catch(error => {
     console.error('Error sending email:', error);
-    setMessage("Failed to send email. Please try again.");
+    setMessage("Email Sending Error: Please make sure that the provided email address is valid.");
   });
+
+};
+
+const handleSortChange = (value) => {
+  setSortColumns(value); // Update state when the radio button changes
 };
 
   return (
@@ -325,7 +335,13 @@ const handleSendEmail = () => {
           Console Log Box 
         </h3>
         <div className="card mb-4">
-          {message && <p className="text-center mt-3 message-console">{message}</p>}
+          {message ? (
+            <p className="text-center mt-3 message-console">{message}</p>
+          ) : (
+            <p className="text-center mt-3 text-muted">
+              Awaiting system messages...
+            </p>
+          )}
         </div>
 
         {/* Generate Data Report Section */}
@@ -369,6 +385,9 @@ const handleSendEmail = () => {
                     <option value="">--Select Y-Axis--</option>
                     {columns.map(col => <option key={col} value={col}>{col}</option>)}
                   </select>
+                  {(chartType !== "candle" && chartType !== "m_area") && (
+                    <ChartOptions sortColumns={sortColumns} onSortChange={handleSortChange} />
+                  )}
                 </div>
               )}
 
