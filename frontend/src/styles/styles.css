@@ -44,6 +44,65 @@ body {
     height: 100vh; /* Ensure the left column takes up full height */
     padding: 20px; /* Adjust padding as necessary */
   }
+
+  /* Dropdown Styles */
+select {
+  width: 100%;
+  padding: 12px 20px;
+  font-size: 16px;
+  background-color: #1E2753; /* Dark background for dropdown */
+  color: white;
+  border: 2px solid #1E5EFF; /* Border with a lighter shade */
+  border-radius: 6px;
+  font-family: 'Inter', sans-serif;
+  appearance: none; /* Remove default dropdown arrow */
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+/* Custom Dropdown Arrow */
+select::-ms-expand {
+  display: none; /* Remove default arrow in IE */
+}
+
+select:hover {
+  background-color: #c3c3c7; /* Slightly darker on hover */
+  border-color: #1E5EFF;
+}
+
+/* Focus state for better accessibility */
+select:focus {
+  outline: none;
+  border-color: #4CAF50; /* Green border on focus */
+  box-shadow: 0 0 5px rgba(76, 175, 80, 0.5); /* Green shadow */
+}
+
+/* Dropdown Option Styling */
+select option {
+  background-color: #1E2753;
+  color: white;
+  padding: 12px 20px;
+}
+
+/* Hover effect for dropdown options */
+select option:hover {
+  background-color: #1A1D3D;
+}
+
+/* Adding custom dropdown arrow */
+select {
+  background-image: url('data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%20viewBox%3D%220%200%2016%2016%22%3E%3Cpath%20fill%3D%22%23fff%22%20d%3D%22M8%2010L3%205h10z%22/%3E%3C/svg%3E');
+  background-repeat: no-repeat;
+  background-position: right 10px center;
+  background-size: 12px;
+}
+
+/* Optional: Add a subtle animation to dropdown options */
+select option {
+  transition: background-color 0.2s ease;
+}
+
   
   .card {
     background-color: white;
@@ -51,6 +110,11 @@ body {
     box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
     padding: 20px;
     margin-bottom: 20px;
+  }
+
+  .card:hover {
+    transform: scale(1.009);
+    box-shadow: 0 15px 30px rgba(0, 0, 0, 0.15);
   }
   
   .card-header {
@@ -84,7 +148,7 @@ body {
   
   .graph-container {
     height: auto;
-    background-color: #f8f9fa; /* Placeholder for the graph */
+    background-color: #e8eff9; /* Placeholder for the graph */
     place-items: center;
     margin-bottom: 20px;
   }
@@ -98,6 +162,7 @@ body {
 
   .message-console {
     font-weight: bold;
+    color: #ff9800; /* Add a bright orange color for messages */
   }
     
   
@@ -190,31 +255,121 @@ body {
     margin-top: 10px;
   }
   
-  /* Table Styling */
-  .table-container {
-    overflow-x: auto;
-    margin-top: 30px;
-  }
-  
-  table {
-    width: 100%;
-    border-collapse: collapse;
-    text-align: left;
-  }
-  
-  th, td {
-    padding: 12px;
-    border: 1px solid #ddd;
-  }
-  
-  th {
-    background-color: #1E2753;
-    color: white;
-  }
-  
-  tr:hover {
-    background-color: #f1f1f1;
-  }
+/* Updated Table Styling */
+.table-container {
+  overflow-x: auto;
+  margin-top: 30px;
+  border-radius: 12px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  background: linear-gradient(to bottom, #ffffff, #f8f9fc);
+  padding: 16px;
+}
+
+table {
+  width: 100%; /* Ensure table takes up full width of the container */
+  border-collapse: collapse; /* Remove spaces between table cells */
+  table-layout: fixed; 
+  border-spacing: auto;
+  border-radius: 12px;
+  overflow: hidden;
+  background-color: #ffffff;
+  font-family: 'Inter', sans-serif;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  margin-bottom: 20px;
+}
+
+thead {
+  background: linear-gradient(135deg, #2c3e50, #34495e);
+}
+
+th {
+  padding: 18px 16px;
+  text-align: left;
+  width: 250px;
+  color: #ffffff;
+  font-size: 16px;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  position: sticky;
+  top: 0;
+  z-index: 2;
+  backdrop-filter: blur(10px);
+  background-color: rgba(44, 62, 80, 0.9);
+}
+
+td {
+  padding: 16px 16px;
+  font-size: 14px;
+  width: 150px;
+  color: #333333;
+  font-weight: 500;
+  border-bottom: 1px solid #e0e0e0;
+  word-wrap: break-word; /* Ensures content breaks within cells */
+  text-overflow: ellipsis; /* Adds ellipsis for overflowing text */
+  overflow: hidden; /* Prevents text overflow */
+  transition: background-color 0.2s ease, color 0.2s ease;
+}
+
+tr:nth-child(even) {
+  background-color: #f8f9fa;
+}
+
+tr:nth-child(odd) {
+  background-color: #ffffff;
+}
+
+/* Smooth hover effect for rows */
+tr:hover {
+  background-color: #e6f3ff; /* Soft blue background for hover */
+}
+
+tr:hover td {
+  background: #e5f1ff; /* Light blue hover effect */
+  color: #1E2753;
+  transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+th:first-child {
+  border-top-left-radius: 12px;
+}
+
+th:last-child {
+  border-top-right-radius: 12px;
+}
+
+tfoot td {
+  background: linear-gradient(135deg, #2c3e50, #34495e);
+  color: #ffffff;
+  font-weight: 700;
+  text-align: right;
+  padding: 16px;
+}
+
+/* Optional: Add scrollbar styling for overflow tables */
+table {
+  max-height: 800px;
+  overflow-y: auto;
+  display: block;
+}
+
+table::-webkit-scrollbar {
+  width: 5px;
+  height: 5px;
+}
+
+table::-webkit-scrollbar-track {
+  background: #f1f1f1;
+  border-radius: 10px;
+}
+
+table::-webkit-scrollbar-thumb {
+  background: #888;
+  border-radius: 5px;
+}
+
+table::-webkit-scrollbar-thumb:hover {
+  background: #555;
+}
   
   /* Responsive layout for smaller screens */
   @media screen and (max-width: 768px) {

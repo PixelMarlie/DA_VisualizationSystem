@@ -170,7 +170,7 @@ def generate_chart(request):
         close_column = data.get("close_column")
         high_column = data.get("high_column")
         low_column = data.get("low_column")
-        sort_columns = data.get("sort_columns", False)  # Whether to sort by highest numeric row value
+        #sort_columns = data.get("sort_columns", False)  # Whether to sort by highest numeric row value
 
         if chart_type != "candle":
             with connection.cursor() as cursor:
@@ -200,6 +200,7 @@ def generate_chart(request):
             df = df.sort_values(by=[x_axis])
     
         # Optional sorting based on the lowest numeric row value
+        '''
         if sort_columns:
             df["row_max"] = df.apply(
                 lambda row: max(
@@ -208,6 +209,7 @@ def generate_chart(request):
                 axis=1
             )
             df = df.sort_values(by="row_max", ascending=False).drop(columns=["row_max"])
+        '''
 
         # Generate the selected chart type using Plotly
         fig = None

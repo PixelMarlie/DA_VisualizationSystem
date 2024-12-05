@@ -4,7 +4,7 @@ import axios from 'axios';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import React, { useEffect, useState } from "react";
 import ChartDisplay from './components/ChartDisplay.js';
-import ChartOptions from './components/ChartOption.js'; // Correct the path if necessary
+//import ChartOptions from './components/ChartOption.js'; // Correct the path if necessary
 import LOGO from './styles/images/LOGO.png';
 import PLM from './styles/images/PLM.png';
 import './styles/styles.css';
@@ -47,7 +47,7 @@ function App() {
   const [lowColumn, setLowColumn] = useState(""); 
 
   //optional sorting of rows
-  const [sortColumns, setSortColumns] = useState(false);
+  //const [sortColumns, setSortColumns] = useState(false);
 
   useEffect(() => {
     // Fetch the list of uploaded tables from the backend
@@ -124,7 +124,7 @@ const handleGenerateChart = () => {
     x_axis: xAxis,
     y_axes: yAxes,
     chart_type: chartType,
-    sort_columns: sortColumns, // Include the sort option
+    //sort_columns: sortColumns, // Include the sort option
     open_column: openColumn,
     close_column: closeColumn,
     high_column: highColumn,
@@ -222,10 +222,11 @@ const handleSendEmail = () => {
   });
 
 };
-
+/*
 const handleSortChange = (value) => {
   setSortColumns(value); // Update state when the radio button changes
 };
+*/
 
   return (
     <div className="container-fluid">
@@ -350,7 +351,7 @@ const handleSortChange = (value) => {
           Generate Data Visualization
           </h3>
           <label>Select CSV Table</label>
-          <select className="form-control mb-3" onChange={(e) => handleTableSelect(e.target.value)} value={selectedTable || ''}>
+          <select className="form-control mb-3 custom-dropdown" onChange={(e) => handleTableSelect(e.target.value)} value={selectedTable || ''}>
             <option value="">--Select a Table--</option>
             {tables.map(table => <option key={table} value={table}>{table}</option>)}
           </select>
@@ -359,7 +360,7 @@ const handleSortChange = (value) => {
             <>
 
               <label>Chart Type</label>
-              <select className="form-control mb-3" onChange={(e) => setChartType(e.target.value)} value={chartType}>
+              <select className="form-control mb-3 custom-dropdown" onChange={(e) => setChartType(e.target.value)} value={chartType}>
                 <option value="">--Select Chart Type--</option>
                 <option value="bar">Bar Chart</option>
                 <option value="box">Box Chart</option>
@@ -373,7 +374,7 @@ const handleSortChange = (value) => {
               </select>
 
               <label>X-Axis</label>
-              <select className="form-control mb-3" onChange={(e) => setXAxis(e.target.value)} value={xAxis}>
+              <select className="form-control mb-3 custom-dropdown" onChange={(e) => setXAxis(e.target.value)} value={xAxis}>
                 <option value="">--Select X-Axis--</option>
                 {columns.map(col => <option key={col} value={col}>{col}</option>)}
               </select>
@@ -381,20 +382,22 @@ const handleSortChange = (value) => {
               {chartType != "candle" && (
                 <div>
                   <label>Y-Axis</label>
-                  <select className="form-control mb-3" onChange={(e) => setYAxis(e.target.value)} value={yAxis}>
+                  <select className="form-control mb-3 custom-dropdown" onChange={(e) => setYAxis(e.target.value)} value={yAxis}>
                     <option value="">--Select Y-Axis--</option>
                     {columns.map(col => <option key={col} value={col}>{col}</option>)}
                   </select>
+                  {/*                  
                   {(chartType !== "candle" && chartType !== "m_area") && (
                     <ChartOptions sortColumns={sortColumns} onSortChange={handleSortChange} />
                   )}
+                  */}
                 </div>
               )}
 
               {chartType === "m_area" && (
                 <div>
                   <label>Number of Additional Y-Axis:</label>
-                  <select className="form-control mb-3" value={numAdditionalYAxes} onChange={handleNumAdditionalYAxesChange}>
+                  <select className="form-control mb-3 custom-dropdown" value={numAdditionalYAxes} onChange={handleNumAdditionalYAxesChange}>
                     <option value="0">--Select Number--</option>
                     <option value="1">1</option>
                     <option value="2">2</option>
@@ -405,11 +408,11 @@ const handleSortChange = (value) => {
                     <div key={idx}>
                       <label>Additional Y-Axis {idx + 1}:</label>
                       <select
-                        className="form-control mb-3"
+                        className="form-control mb-3 custom-dropdown"
                         value={additionalYAxes[idx]}
                         onChange={(e) => handleAdditionalYAxisChange(idx, e.target.value)}
                       >
-                        <option value="">Select Column</option>
+                        <option value="">--Select Column--</option>
                         {columns.map((col) => (
                           <option key={col} value={col}>{col}</option>
                         ))}
@@ -424,7 +427,7 @@ const handleSortChange = (value) => {
                   <div>
                     <label>Open:</label>
                     <select
-                      className="form-control mb-3"
+                      className="form-control mb-3 custom-dropdown"
                       value={openColumn}
                       onChange={(e) => setOpenColumn(e.target.value)}
                     >
@@ -437,7 +440,7 @@ const handleSortChange = (value) => {
                   <div>
                     <label>Close:</label>
                     <select
-                      className="form-control mb-3"
+                      className="form-control mb-3 custom-dropdown"
                       value={closeColumn}
                       onChange={(e) => setCloseColumn(e.target.value)}
                     >
@@ -450,7 +453,7 @@ const handleSortChange = (value) => {
                   <div>
                     <label>High:</label>
                     <select
-                      className="form-control mb-3"
+                      className="form-control mb-3 custom-dropdown"
                       value={highColumn}
                       onChange={(e) => setHighColumn(e.target.value)}
                     >
@@ -463,7 +466,7 @@ const handleSortChange = (value) => {
                   <div>
                     <label>Low:</label>
                     <select
-                      className="form-control mb-3"
+                      className="form-control mb-3 custom-dropdown"
                       value={lowColumn}
                       onChange={(e) => setLowColumn(e.target.value)}
                     >
