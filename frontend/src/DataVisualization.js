@@ -4,6 +4,7 @@ import axios from 'axios';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import React, { useEffect, useState } from "react";
 import ChartDisplay from './components/ChartDisplay.js';
+import PrintButton from "./components/PrintButton.js";
 //import ChartOptions from './components/ChartOption.js'; // Correct the path if necessary
 import LOGO from './styles/images/LOGO.png';
 import PLM from './styles/images/PLM.png';
@@ -49,6 +50,13 @@ function App() {
   //optional sorting of rows
   //const [sortColumns, setSortColumns] = useState(false);
 
+  //UI Chart Desc action
+  const [showAreaDescription, setShowAreaDescription] = useState(false);
+  const [showBarDescription, setShowBarDescription] = useState(false);
+  const [showBoxDescription, setShowBoxDescription] = useState(false);
+  const [showCandleDescription, setShowCandleDescription] = useState(false);
+  const [showHeatDescription, setShowHeatDescription] = useState(false);
+
   useEffect(() => {
     // Fetch the list of uploaded tables from the backend
     axios.get('http://localhost:8000/api/list_tables/')
@@ -74,7 +82,14 @@ function App() {
     axios.post('http://localhost:8000/api/upload/', formData)
       .then(response => {
         console.log('CSV uploaded successfully');
-        setMessage("CSV cleaned and uploaded successfully!");
+        const { cleaning_steps } = response.data;
+
+        // Dynamically generate the message based on cleaning steps
+        const cleaningMessage = cleaning_steps.length
+            ? `Targeted CSV File: ${csvFile.name} \n\nList of Data Cleaning Occured:\n- ${cleaning_steps.join("\n- ")}.\n\n CSV file has been cleaned and uploaded successfully!`
+            : "CSV uploaded successfully with no cleaning needed!";
+        setMessage(cleaningMessage);
+        
         // Refetch tables after successful upload
         axios.get('http://localhost:8000/api/list_tables/')
           .then(response => {
@@ -273,6 +288,7 @@ const handleSortChange = (value) => {
                   <button className="btn btn-success" onClick={handleSaveInterpretation}>
                     Save Interpretation
                   </button>
+                  <PrintButton chartUrl2={chartUrl2} interpretation={interpretation} setMessage={setMessage} />
                 </div>
               )}
             </div>
@@ -281,7 +297,7 @@ const handleSortChange = (value) => {
           {/* Email Interpratation card */}
             {showEmailCard && (
               <div className="card mb-4">
-                <h3 className="card-header">Email Interpretation</h3>
+                <h3 className="card-header">Email Your Interpretation</h3>
                 <div className="card-body">
                 <input
                     type="username"
@@ -336,13 +352,15 @@ const handleSortChange = (value) => {
           Console Log Box 
         </h3>
         <div className="card mb-4">
-          {message ? (
-            <p className="text-center mt-3 message-console">{message}</p>
-          ) : (
-            <p className="text-center mt-3 text-muted">
-              Awaiting system messages...
-            </p>
-          )}
+          <pre>
+            {message ? (
+              <p className="text-center mt-3 message-console">{message}</p>
+            ) : (
+              <p className="text-center mt-3 text-muted" style={{ fontSize: 'medium' }}>
+                Awaiting system messages...
+              </p>
+            )}
+          </pre>
         </div>
 
         {/* Generate Data Report Section */}
@@ -363,7 +381,7 @@ const handleSortChange = (value) => {
               <select className="form-control mb-3 custom-dropdown" onChange={(e) => setChartType(e.target.value)} value={chartType}>
                 <option value="">--Select Chart Type--</option>
                 <option value="bar">Bar Chart</option>
-                <option value="box">Box Chart</option>
+                <option value="box">Box Plot</option>
                 <option value="candle">Candlestick Chart</option>
                 <option value="heat">Heatmap</option>
                 <option value="s_area">Area Chart (Single)</option>
@@ -372,6 +390,185 @@ const handleSortChange = (value) => {
                 {/*<option value="scatter">Scatter Plot</option>*/}
                 {/*<option value="histogram">Histogram</option>*/}
               </select>
+
+              {/*Bar Chart Description*/}
+              {chartType === "bar" && (
+                <div style={{ marginBottom: '16px' }}>
+                  <label 
+                        style={{ 
+                          fontWeight: 'bold', 
+                          cursor: 'pointer', 
+                          display: 'flex', 
+                          alignItems: 'center',
+                        }}
+                        onClick={() => setShowBarDescription(!showBarDescription)}
+                  >
+                    <span style={{ textDecoration: 'underline' }}>
+                      Bar Chart
+                    </span>
+                    <i 
+                      className="fas fa-question-circle ms-2" 
+                      style={{ color: 'white', marginLeft: '8px', textDecoration: 'none' }}
+                    ></i>
+                  </label>
+                  {showBarDescription && (
+                    <p>
+                      A visual representation that compares categories or groups by displaying rectangular bars of varying lengths. 
+                      It's ideal for showcasing data trends, making comparisons, and highlighting differences.
+                    </p>
+                  )}
+                </div>
+              )}
+
+              {/*Box Plot Description*/}
+              {chartType === "box" && (
+                <div style={{ marginBottom: '16px' }}>
+                  <label 
+                        style={{ 
+                          fontWeight: 'bold', 
+                          cursor: 'pointer', 
+                          display: 'flex', 
+                          alignItems: 'center',
+                        }}
+                        onClick={() => setShowBoxDescription(!showBoxDescription)}
+                  >
+                    <span style={{ textDecoration: 'underline' }}>
+                      Box Plot
+                    </span>
+                    <i 
+                      className="fas fa-question-circle ms-2" 
+                      style={{ color: 'white', marginLeft: '8px', textDecoration: 'none' }}
+                    ></i>
+                  </label>
+                  {showBoxDescription && (
+                    <p>
+                      A visual representation of data distribution, showing the minimum, first quartile, median, 
+                      third quartile, and maximum values. Useful for identifying outliers, skewness, and comparing data sets.
+                    </p>
+                  )}
+                </div>
+              )}
+
+              {/*Candlestick Chart Description*/}
+              {chartType === "candle" && (
+                <div style={{ marginBottom: '16px' }}>
+                  <label 
+                        style={{ 
+                          fontWeight: 'bold', 
+                          cursor: 'pointer', 
+                          display: 'flex', 
+                          alignItems: 'center',
+                        }}
+                        onClick={() => setShowCandleDescription(!showCandleDescription)}
+                  >
+                    <span style={{ textDecoration: 'underline' }}>
+                      Candlestick Chart
+                    </span>
+                    <i 
+                      className="fas fa-question-circle ms-2" 
+                      style={{ color: 'white', marginLeft: '8px', textDecoration: 'none' }}
+                    ></i>
+                  </label>
+                {showCandleDescription && (
+                  <p>
+                  A financial chart that displays the price movement of a security over a specific period. 
+                  It requires four key data points: open, close, high, and low prices. It's widely used in 
+                  technical analysis to identify trends, reversals, and potential trading opportunities.
+                  </p>
+                )}
+                </div>
+              )}
+
+              {/*Heatmap Description*/}
+              {chartType === "heat" && (
+                <div style={{ marginBottom: '16px' }}>
+                  <label 
+                        style={{ 
+                          fontWeight: 'bold', 
+                          cursor: 'pointer', 
+                          display: 'flex', 
+                          alignItems: 'center',
+                        }}
+                        onClick={() => setShowHeatDescription(!showHeatDescription)}
+                  >
+                    <span style={{ textDecoration: 'underline' }}>
+                      Heatmap
+                    </span>
+                    <i 
+                      className="fas fa-question-circle ms-2" 
+                      style={{ color: 'white', marginLeft: '8px', textDecoration: 'none' }}
+                    ></i>
+                  </label>
+                  {showHeatDescription && (
+                    <p>
+                    A visual representation of data where values are represented by color. Warmer colors indicate 
+                    higher values, while cooler colors represent lower values. Useful for identifying patterns, 
+                    trends, and anomalies in large datasets.
+                    </p>
+                  )}
+                </div>
+              )}
+
+              {/*Area Chart (Single) Description*/}
+              {chartType === "s_area" && (
+                <div style={{ marginBottom: '16px' }}>
+                  <label 
+                        style={{ 
+                          fontWeight: 'bold', 
+                          cursor: 'pointer', 
+                          display: 'flex', 
+                          alignItems: 'center',
+                        }}
+                        onClick={() => setShowAreaDescription(!showAreaDescription)}
+                  >
+                    <span style={{ textDecoration: 'underline' }}>
+                      Area Chart (Single)
+                    </span>
+                    <i 
+                      className="fas fa-question-circle ms-2" 
+                      style={{ color: 'white', marginLeft: '8px', textDecoration: 'none' }}
+                    ></i>
+                  </label>
+                  {showAreaDescription && (
+                    <p>
+                    A line chart with the area below the line filled in. It's great for visualizing trends and 
+                    cumulative values over time, making it ideal for tracking sales, website traffic, or other 
+                    time-series data.
+                    </p>
+                  )}
+                </div>
+              )}
+
+              {/*Area Chart (Stacked) Description*/}
+              {chartType === "m_area" && (
+                <div style={{ marginBottom: '16px' }}>
+                  <label 
+                        style={{ 
+                          fontWeight: 'bold', 
+                          cursor: 'pointer', 
+                          display: 'flex', 
+                          alignItems: 'center',
+                        }}
+                        onClick={() => setShowAreaDescription(!showAreaDescription)}
+                  >
+                    <span style={{ textDecoration: 'underline' }}>
+                      Area Chart (Stacked)
+                    </span>
+                    <i 
+                      className="fas fa-question-circle ms-2" 
+                      style={{ color: 'white', marginLeft: '8px', textDecoration: 'none' }}
+                    ></i>
+                  </label>
+                  {showAreaDescription && (
+                    <p>
+                      A visual representation that displays the cumulative value of multiple categories over time. 
+                      It often requires multiple y-axes to accurately represent different scales and units of measurement 
+                      for each category. It's great for understanding the composition of a total value and how different 
+                      components contribute to the overall trend.
+                    </p>
+                  )}
+                </div>
+              )}
 
               <label>X-Axis</label>
               <select className="form-control mb-3 custom-dropdown" onChange={(e) => setXAxis(e.target.value)} value={xAxis}>

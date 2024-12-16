@@ -18,6 +18,8 @@ Backend Installations (DA_VisualizationSystem/backend)
 ->pip install plotly kaleido
 ->pip install django-crispy-forms
 ->pip install scikit-learn
+->pip install weasyprint
+
 
 Frontend Installations (DA_VisualizationSystem/frontend)
 ->npm install axios

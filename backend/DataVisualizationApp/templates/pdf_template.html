@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Chart Report</title>
+  <style>
+    /* Reset and full-page setup */
+    html, body {
+      height: 100%;
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    /* PDF-friendly full page layout */
+    @page {
+      size: A4;
+      margin: 0;
+    }
+
+    body {
+      font-family: 'Arial', sans-serif;
+      line-height: 1.6;
+      background-color: #F8FBFC;
+      color: #333;
+      display: flex;
+      flex-direction: column;
+      width: 210mm; /* A4 width */
+      height: 297mm; /* A4 height */
+      margin: 0 auto;
+      overflow: hidden;
+    }
+
+    .container {
+      flex-grow: 1;
+      display: flex;
+      flex-direction: column;
+      width: 100%;
+      height: 100%;
+      padding: 30px;
+      box-sizing: border-box;
+    }
+
+    .report-header {
+      background-color: #1A5F7A;
+      color: white;
+      text-align: center;
+      padding: 20px;
+      margin-bottom: 20px;
+    }
+
+    .report-header h1 {
+      font-size: 24px;
+      font-weight: bold;
+    }
+
+    .chart {
+      flex-grow: 1;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      text-align: center;
+      background-color: #F0F8FF;
+      margin-bottom: 20px;
+      padding: 20px;
+      overflow: hidden;
+    }
+
+    .chart img {
+      max-width: 100%;
+      max-height: 100%;
+      object-fit: contain;
+      display: block;
+      margin: 0 auto;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    }
+
+    .interpretation {
+      background-color: white;
+      border-left: 4px solid #159895;
+      padding: 20px;
+      margin-bottom: 20px;
+    }
+
+    .interpretation h2 {
+      color: #1A5F7A;
+      margin-bottom: 15px;
+      font-size: 20px;
+    }
+
+    .interpretation p {
+      color: #555;
+      line-height: 1.8;
+    }
+
+    /* Ensure full page coverage for print/PDF */
+    @media print {
+      body {
+        width: 100%;
+        height: 100%;
+        margin: 0;
+        padding: 0;
+      }
+      .container {
+        width: 100%;
+        height: 100%;
+        padding: 30px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="report-header">
+      <h1>Chart Report</h1>
+    </div>
+
+    <div class="chart">
+      <img src="{{ chart_url }}" alt="Generated Chart">
+    </div>
+
+    {% if interpretation %}
+      <div class="interpretation">
+        <h2>Interpretation</h2>
+        <p>{{ interpretation }}</p>
+      </div>
+    {% endif %}
+  </div>
+</body>
+</html>

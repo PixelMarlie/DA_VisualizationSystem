@@ -2,6 +2,7 @@ import React from "react";
 import { useNavigate } from "react-router-dom";
 import BG from "./BG.png";
 import BG_Card from "./BG_Card.jpg";
+import BG_Mobile from "./BG_Mobile.png";
 import { Card } from "./ui/Card.tsx";
 
 function WelcomePage() {
@@ -13,23 +14,42 @@ function WelcomePage() {
 
   return (
     <div style={{ 
-      textAlign: "center", 
+      textAlign: "center",
       display: "flex",
       flexDirection: "column",
       justifyContent: "center",
       alignItems: "center",
-      minHeight: "100vh", 
+      minHeight: "100vh",
       height: "100%",
       padding: "20px",
       fontFamily: "'Arial', sans-serif",
       boxSizing: "border-box",
-      backgroundImage: `url(${BG})`, // Use backgroundImage with template literal
-      backgroundSize: "cover", // Ensure the image covers the entire container
-      backgroundRepeat: "no-repeat", // Prevent tiling
-      backgroundPosition: "center", // Center the image
       overflowX: "hidden",
-      overflowY: "auto"
-    }}>
+      overflowY: "auto",
+    }}
+    className="responsive-background"
+    >
+    <style>
+    {`
+      .responsive-background {
+        background-repeat: no-repeat;
+        background-position: center;
+        background-size: cover;
+      }
+
+      @media (min-width: 768px) {
+        .responsive-background {
+          background-image: url(${BG}); /* Desktop background */
+        }
+      }
+
+      @media (max-width: 767px) {
+        .responsive-background {
+          background-image: url(${BG_Mobile}); /* Mobile background */
+        }
+      }
+    `}
+    </style>
       <Card 
         style={{
           display: "flex",
@@ -56,7 +76,7 @@ function WelcomePage() {
         onMouseEnter={(e) => {
           e.currentTarget.style.boxShadow = "0 0 40px rgba(0, 123, 255, 0.6), 0 0 80px rgba(0, 123, 255, 0.4)";
           e.currentTarget.style.border = "2px solid rgba(0, 123, 255, 0.5)";
-          e.currentTarget.style.transform = "scale(1.80)"; // Slightly increased scale
+          e.currentTarget.style.transform = "scale(1.6)"; // Slightly increased scale
         }}
         onMouseLeave={(e) => {
           e.currentTarget.style.boxShadow = "0 4px 6px rgba(0,0,0,0.1)";

@@ -1,15 +1,5 @@
 /* General styling for all screens */
 
-body {
-    background-image: url('./images/BG.png'); 
-    background-size: cover;  
-    background-position: center center; 
-    background-attachment: fixed; 
-    background-repeat: no-repeat; 
-    height: 100vh; 
-    margin: 0; 
-  }
-
 .header {
     background-color: #1E5EFF;
     height: 250px; 

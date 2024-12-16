@@ -14,6 +14,7 @@ urlpatterns = [
     path('fetch_axis_data/', views.fetch_axis_data, name='fetch_axis_data'),
     #path('save_interpretation/', views.save_interpretation, name='save_interpretation'),
     path('send_email/', views.send_email, name='send_email'),
+    path("generate_pdf/", views.generate_pdf, name="generate_pdf"),
 ]
 
 urlpatterns += staticfiles_urlpatterns()

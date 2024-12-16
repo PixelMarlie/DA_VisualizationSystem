@@ -19,6 +19,44 @@ from django.conf import settings
 import json
 from django.core.mail import EmailMessage
 from django.template.loader import render_to_string
+from weasyprint import HTML
+
+# PDF Generation 
+@csrf_exempt
+def generate_pdf(request):
+    if request.method == "POST":
+        try:
+            # Parse incoming JSON data
+            data = json.loads(request.body)
+            chart_url2 = data.get("chartUrl")  # Use chartUrl for PNG now
+            interpretation = data.get("interpretation", "")
+
+            if not chart_url2:
+                return JsonResponse({"error": "Chart PNG URL is required"}, status=400)
+
+            # Prepare the HTML content for the PDF
+            html_content = render_to_string("pdf_template.html", {
+                "chart_url": chart_url2,  # Send PNG path to the template
+                "interpretation": interpretation,
+            })
+
+            # Generate PDF from the HTML content
+            pdf_file = HTML(string=html_content, base_url=request.build_absolute_uri('/')).write_pdf()
+
+            # Send the PDF as a response
+            response = HttpResponse(pdf_file, content_type="application/pdf")
+            response["Content-Disposition"] = 'attachment; filename="chart_report.pdf"'
+            return response
+
+        except json.JSONDecodeError:
+            return JsonResponse({"error": "Invalid JSON data"}, status=400)
+        except Exception as e:
+            return JsonResponse({"error": str(e)}, status=500)
+
+    return JsonResponse({"error": "Invalid request method"}, status=400)
+
+
+
 
 #Clean Column Names for SQL Acceptance
 def clean_column_name(name):
@@ -30,7 +68,7 @@ def clean_column_name(name):
         name += '_col'  # Add a suffix to avoid conflicts
     return name
 
-# 3. Text Data Cleaning
+# 4. Text Data Cleaning
 def clean_text(text):
     if isinstance(text, str):  # Only clean if the value is a string
         text = re.sub(r'[^\w\s]', '', text)  # Remove special characters
@@ -54,21 +92,36 @@ def upload_csv(request):
         # Read the CSV file using pandas
         df = pd.read_csv(csv_file)
         
+        # Initialize cleaning steps tracker
+        cleaning_steps = set()
+        
         # Start Auto Data Cleaning
         # 1. Handle Missing Values
         for column in df.columns:
             if df[column].dtype == 'object':  # Text columns
                 most_frequent_value = df[column].mode()[0] if not df[column].mode().empty else "Unknown"
+                if df[column].isnull().any():
+                    cleaning_steps.add("Handled Missing Values in Text Columns")
                 df[column].fillna(most_frequent_value, inplace=True)
             elif np.issubdtype(df[column].dtype, np.number):  # Numeric columns
                 median_value = df[column].median() if not df[column].dropna().empty else 0
+                if df[column].isnull().any():
+                    cleaning_steps.add("Handled Missing Values in Numeric Columns")
                 df[column].fillna(median_value, inplace=True)
             elif np.issubdtype(df[column].dtype, np.datetime64):  # Datetime columns
+                if df[column].isnull().any():
+                    cleaning_steps.add("Handled Missing Values in Datetime Columns")
                 df[column].fillna(pd.Timestamp.now(), inplace=True)
             else:
+                if df[column].isnull().any():
+                    cleaning_steps.add("Handled Missing Values in Other Columns")
                 df[column].fillna("Unknown", inplace=True)
         
-        # 2. Data Type Conversion
+        # 2. Remove Exact Duplicates
+        cleaning_steps.add("Handled Duplicate Data")
+        df.drop_duplicates(inplace=True)
+        
+        # 3. Data Type Conversion
         for column in df.columns:
             if pd.api.types.is_numeric_dtype(df[column]):
                 # Check if all values are whole numbers (no decimals or just trailing zeroes)
@@ -78,12 +131,15 @@ def upload_csv(request):
                 else:
                     # If the column contains decimal values, round them to 2 decimal places
                     df[column] = df[column].apply(lambda x: round(x, 2) if isinstance(x, float) else x)
+                    cleaning_steps.add("Rounded Numeric Values")
             elif pd.api.types.is_datetime64_any_dtype(df[column]) or pd.to_datetime(df[column], errors="coerce").notnull().all():
                 # Convert text representations of dates to datetime and extract only the date (no time)
                 df[column] = pd.to_datetime(df[column], errors="coerce").dt.date.fillna(pd.Timestamp.now().date())
+                cleaning_steps.add("Converted Text to Datetime")
             else:
                 # Clean text and ensure consistent formatting for non-numeric, non-datetime columns
                 df[column] = df[column].astype(str).apply(clean_text)
+                cleaning_steps.add("Text Cleaning")
 
         # Clean column names using the updated function
         df.columns = [clean_column_name(col) for col in df.columns]
@@ -108,6 +164,7 @@ def upload_csv(request):
 
         return JsonResponse({
             "message": f"Uploaded and saved to table {table_name} successfully.",
+            "cleaning_steps": list(cleaning_steps),
             "total_rows": len(df),
             "sorted_columns": df.columns.tolist()
         })
